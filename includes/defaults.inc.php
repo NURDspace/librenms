@@ -128,6 +128,7 @@ $config['public_status']    = false; // Enable public accessable status page
 $config['old_graphs']             = 1;   // RRDfiles from before the great rra reform. This is default for a while.
 
 $config['int_customers']           = 1;  # Enable Customer Port Parsing
+$config['customers_descr']         = 'cust';
 $config['int_transit']             = 1;  # Enable Transit Types
 $config['int_peering']             = 1;  # Enable Peering Types
 $config['int_core']                = 1;  # Enable Core Port Types
@@ -637,6 +638,7 @@ $config['dateformat']['compact']                          = "Y-m-d H:i:s";
 $config['dateformat']['time']                             = "H:i:s";
 
 $config['enable_clear_discovery']                        = 1;// Set this to 0 if you want to disable the web option to rediscover devices
+$config['enable_port_relationship']                      = TRUE;// Set this to false to not display neighbour relationships for ports
 
 $config['enable_footer']                                 = 1;// Set this to 0 if you want to disable the footer copyright in the web interface
 $config['api_demo']                                      = 0;// Set this to 1 if you want to disable some untrusting features for the API
