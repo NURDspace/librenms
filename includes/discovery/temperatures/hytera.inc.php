@@ -16,7 +16,7 @@ if ($device['os'] == "hytera")
       list($oid,$descr) = explode(" ", $data,2);
       $split_oid = explode('.',$oid);
       $index = $split_oid[count($split_oid)-1];
-      $descr = "Voltage " . $index;
+      $descr = "PA Temperature " . $index;
       $oid  = ".1.3.6.1.4.1.40297.1.2.1.2.2." . $index;
       $temperature = hytera_h2f(str_replace("\"", "",snmp_get($device, $oid, "-Oqv")),2);
 
