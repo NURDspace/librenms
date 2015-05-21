@@ -65,4 +65,4 @@ function hytera_h2f($number,$nd) {
     return number_format($floatfinal,$nd,'.','');
 }
 
-$sensor_value = hytera_h2f(snmp_get($device, $sensor['sensor_oid'], "-OUqnv", ""),1);
+$sensor_value = hytera_h2f(str_replace("\"", "",snmp_get($device, $sensor['sensor_oid'], "-OUqnv", "")),2);
