@@ -34,6 +34,23 @@ function poll_sensor($device, $class, $unit)
             sleep(1); # Give the TME some time to reset
           }
         }
+      } elseif ($class == "voltage")
+      {
+        if ($device['os'] == 'hytera') {
+            require "includes/polling/voltages/hytera.inc.php";
+        } else {
+          for ($i = 0;$i < 5;$i++) # Try 5 times to get a valid temp reading
+          {
+            if ($debug) echo("Attempt $i ");
+            $sensor_value = trim(str_replace("\"", "", snmp_get($device, $sensor['sensor_oid'], "-OUqnv", "SNMPv2-MIB$mib")));
+            preg_match("/[\d\.]+/",$sensor_value,$temp_response);
+            if (!empty($temp_response[0])) {
+                $sensor_value = $temp_response[0];
+            }
+
+            sleep(1); # Give the TME some time to reset
+          }
+        }
       } elseif ($class == "state") {
           $sensor_value = trim(str_replace("\"", "", snmp_walk($device, $sensor['sensor_oid'], "-Oevq", "SNMPv2-MIB")));
       } else {
