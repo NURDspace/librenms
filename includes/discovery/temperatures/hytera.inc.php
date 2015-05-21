@@ -18,7 +18,7 @@ if ($device['os'] == "hytera")
       $index = $split_oid[count($split_oid)-1];
       $descr = "Voltage " . $index;
       $oid  = ".1.3.6.1.4.1.40297.1.2.1.2.2." . $index;
-      $temperature = hytera_h2f(snmp_get($device, $oid, "-Oqv"),2);
+      $temperature = hytera_h2f(str_replace("\"", "",snmp_get($device, $oid, "-Oqv")),2);
 
       discover_sensor($valid['sensor'], 'temperature', $device, $oid, $index, $type, $descr, $divisor, '1', NULL, NULL, NULL, NULL, $temperature);
     }
