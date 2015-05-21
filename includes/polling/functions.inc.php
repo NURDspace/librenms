@@ -20,7 +20,7 @@ function poll_sensor($device, $class, $unit)
       {
         if ($device['os'] == 'netapp') {
             require "includes/polling/temperatures/netapp.inc.php";
-        } elseif ($device['os'] == 'hyters')
+        } elseif ($device['os'] == 'hytera')
         {
             require "include/polling/temperatures/hytera.inc.php";
         } else {
