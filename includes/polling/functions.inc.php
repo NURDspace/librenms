@@ -20,6 +20,9 @@ function poll_sensor($device, $class, $unit)
       {
         if ($device['os'] == 'netapp') {
             require "includes/polling/temperatures/netapp.inc.php";
+        } elseif ($device['os'] == 'hyters')
+        {
+            require "include/polling/temperatures/hytera.inc.php";
         } else {
           for ($i = 0;$i < 5;$i++) # Try 5 times to get a valid temp reading
           {
