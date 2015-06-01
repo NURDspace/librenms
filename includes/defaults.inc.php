@@ -129,6 +129,10 @@ $config['old_graphs']             = 1;   // RRDfiles from before the great rra r
 
 $config['int_customers']           = 1;  # Enable Customer Port Parsing
 $config['customers_descr']         = 'cust';
+$config['transit_descr']           = ""; // Add custom transit descriptions (can be an array)
+$config['peering_descr']           = ""; // Add custom peering descriptions (can be an array)
+$config['core_descr']              = ""; // Add custom core descriptions (can be an array)
+$config['custom_descr']            = ""; // Add custom interface descriptions (can be an array)
 $config['int_transit']             = 1;  # Enable Transit Types
 $config['int_peering']             = 1;  # Enable Peering Types
 $config['int_core']                = 1;  # Enable Core Port Types
@@ -239,13 +243,14 @@ $config['alert'] = array(
 	'default_only' => false,              //Only issue to default
 	'default_mail' => '',                 //Default email
 	'tolerance-window' => 10,             //Allow +/-10s tolerance to delay values to counter cron-irregularities
+	'fixed-contacts' => true,             //If true any changes in user-permissions,user-mail,syscontact,default-mail will not be honoured until the next alert triggers.
 );
 
 //Legacy options
 
 $config['alerts']['email']['default']      = NULL;    // Default alert recipient
 $config['alerts']['email']['default_only'] = FALSE;   // Only use default recipient
-$config['alerts']['email']['enable']       = TRUE;    // Enable email alerts
+$config['alerts']['email']['enable']       = FALSE;   // Enable email alerts
 $config['alerts']['bgp']['whitelist']      = NULL;    // Populate as an array() with ASNs to alert on.
 $config['alerts']['port']['ifdown']        = FALSE;   // Generate alerts for ports that go down
 
