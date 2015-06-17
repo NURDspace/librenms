@@ -1,5 +1,25 @@
 <?php
 
+// Observium Includes
+include_once($config['install_dir'] . "/includes/dbFacile.php");
+include_once($config['install_dir'] . "/includes/mergecnf.inc.php");
+
+// Connect to database
+$database_link = mysql_pconnect($config['db_host'], $config['db_user'], $config['db_pass']);
+if (!$database_link)
+{
+        echo("<h2>MySQL Error</h2>");
+        echo(mysql_error());
+        die;
+}
+$database_db = mysql_select_db($config['db_name'], $database_link);
+
+$clone = $config;
+foreach( dbFetchRows('select config_name,config_value from config') as $obj ) {
+    $clone = array_replace_recursive($clone,mergecnf($obj));
+}
+$config = array_replace_recursive($clone,$config);
+
 /////////////////////////////////////////////////////////
 #    NO CHANGES TO THIS FILE, IT IS NOT USER-EDITABLE   #
 /////////////////////////////////////////////////////////
@@ -640,6 +660,12 @@ $os = "powervault";
 $config['os'][$os]['text']              = "Dell PowerVault";
 $config['os'][$os]['icon']              = "dell";
 
+$os = "equallogic";
+$config['os'][$os]['text']              = "Dell EqualLogic";
+$config['os'][$os]['icon']              = "dell";
+$config['os'][$os]['over'][0]['graph']  = "device_bits";
+$config['os'][$os]['over'][0]['text']   = "Device Traffic";
+
 $os = "drac";
 $config['os'][$os]['text']              = "Dell DRAC";
 $config['os'][$os]['icon']              = "dell";
@@ -669,13 +695,6 @@ $os = "dlinkap";
 $config['os'][$os]['text']              = "D-Link Access Point";
 $config['os'][$os]['type']              = "wireless";
 $config['os'][$os]['icon']              = "dlink";
-
-//$os = "ubiquitiap";
-//$config['os'][$os]['text']              = "Ubiquiti Networks Wireless";
-//$config['os'][$os]['type']              = "wireless";
-//$config['os'][$os]['icon']              = "ubiquiti";
-//$config['os'][$os]['over'][0]['graph']  = "device_bits";
-//$config['os'][$os]['over'][0]['text']   = "Device Traffic";
 
 $os = "axiscam";
 $config['os'][$os]['text']              = "AXIS Network Camera";
@@ -1122,6 +1141,20 @@ $config['os'][$os]['ifXmcbc']           = 1;
 $config['os'][$os]['over'][0]['graph']  = "device_bits";
 $config['os'][$os]['over'][0]['text']   = "Device Traffic";
 $config['os'][$os]['icon']              = "pbn";
+
+// Enterasys 
+$os = "enterasys";
+$config['os'][$os]['text']              = "Enterasys";
+$config['os'][$os]['type']              = "network";
+$config['os'][$os]['over'][0]['graph']  = "device_bits";
+$config['os'][$os]['over'][0]['text']   = "Device Traffic";
+$config['os'][$os]['icon']              = "enterasys";
+
+// Multimatic UPS (Generex CS121 SNMP Adapter)
+$os = "multimatic";
+$config['os'][$os]['text']              = "Multimatic UPS";
+$config['os'][$os]['type']              = "power";
+$config['os'][$os]['icon']              = "multimatic";
 
 foreach ($config['os'] as $this_os => $blah)
 {
@@ -1749,17 +1782,7 @@ if (isset($_SERVER['HTTPS']))
   $config['base_url'] = preg_replace('/^http:/','https:', $config['base_url']);
 }
 
-// Connect to database
-$database_link = mysql_pconnect($config['db_host'], $config['db_user'], $config['db_pass']);
-if (!$database_link)
-{
-        echo("<h2>MySQL Error</h2>");
-        echo(mysql_error());
-        die;
-}
-$database_db = mysql_select_db($config['db_name'], $database_link);
-
-if ($config['memcached']['enable'])
+if ($config['memcached']['enable'] === TRUE)
 {
   if (class_exists("Memcached"))
   {

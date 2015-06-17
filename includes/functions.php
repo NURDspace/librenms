@@ -18,6 +18,7 @@ include_once("Net/IPv4.php");
 include_once("Net/IPv6.php");
 
 // Observium Includes
+include_once($config['install_dir'] . "/includes/dbFacile.php");
 
 include_once($config['install_dir'] . "/includes/common.php");
 include_once($config['install_dir'] . "/includes/rrdtool.inc.php");
@@ -27,7 +28,6 @@ include_once($config['install_dir'] . "/includes/syslog.php");
 include_once($config['install_dir'] . "/includes/rewrites.php");
 include_once($config['install_dir'] . "/includes/snmp.inc.php");
 include_once($config['install_dir'] . "/includes/services.inc.php");
-include_once($config['install_dir'] . "/includes/dbFacile.php");
 include_once($config['install_dir'] . "/includes/console_colour.php");
 
 $console_color = new Console_Color2();
@@ -285,6 +285,7 @@ function addHost($host, $snmpver, $port = '161', $transport = 'udp', $quiet = '0
   // Test Database Exists
   if (dbFetchCell("SELECT COUNT(*) FROM `devices` WHERE `hostname` = ?", array($host)) == '0')
   {
+    if (ip_exists($host) === false) {
       // Test reachability
       if ($force_add == 1 || isPingable($host))
       {
@@ -369,6 +370,11 @@ function addHost($host, $snmpver, $port = '161', $transport = 'udp', $quiet = '0
         // failed Reachability
         if($quiet == '0') { print_error("Could not ping $host"); }
       }
+    } else {
+        if ($quiet == 0) {
+            print_error("Already have host with this IP $host");
+        }
+    }
   } else {
     // found in database
     if($quiet == '0') { print_error("Already got host $host"); }
@@ -1199,5 +1205,65 @@ function first_oid_match($device, $list) {
 	if (!empty($tmp)) {
 	    return $tmp;
 	}
+    }
+}
+
+function hex_to_ip($hex) {
+    $return = "";
+    if (filter_var($hex, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === FALSE && filter_var($hex, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === FALSE) {
+        $hex_exp = explode(' ', $hex);
+        foreach ($hex_exp as $item) {
+            if (!empty($item) && $item != "\"") {
+                $return .= hexdec($item).'.';
+            }
+        }
+        $return = substr($return, 0, -1);
+    } else {
+        $return = $hex;
+    }
+    return $return;
+}
+function fix_integer_value($value) {
+    if ($value < 0) {
+        $return = 4294967296+$value;
+    } else {
+        $return = $value;
+    }
+    return $return;
+}
+
+function ip_exists($ip) {
+    // Function to check if an IP exists in the DB already
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== FALSE) {
+        if (!dbFetchRow("SELECT `ipv6_address_id` FROM `ipv6_addresses` WHERE `ipv6_address` = ? OR `ipv6_compressed` = ?", array($ip,$ip))) {
+            return false;
+        }
+    } elseif (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== FALSE) {
+        if (!dbFetchRow("SELECT `ipv4_address_id` FROM `ipv4_addresses` WHERE `ipv4_address` = ?", array($ip))) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+    return true;
+}
+
+/*
+ * convenience function - please use this instead of 'if ($debug) { echo ...; }'
+ */
+function d_echo($text) {
+    global $debug;
+    if ($debug) {
+        echo "$text\n";
+    }
+}
+
+/*
+ * convenience function - please use this instead of 'if ($debug) { print_r ...; }'
+ */
+function d_print_r($var) {
+    global $debug;
+    if ($debug) {
+        print_r($var);
     }
 }

@@ -31,5 +31,8 @@ Contributors to LibreNMS:
 - Thom Seddon <thom@seddonmedia.co.uk> (thomseddon)
 - Vitali Kari <vitali.kari@gmail.com> (vitalisator)
 - James Campbell <neokjames@gmail.com> (neokjames)
+- Steve Calvário <calvario.steve@gmail.com> (Calvario)
+- Christian Marg <marg@rz.tu-clausthal.de> (einhirn)
 
 [1]: http://observium.org/ "Observium web site"
+

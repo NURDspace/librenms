@@ -93,7 +93,7 @@ function IssueAlert($alert) {
 	}
 	$obj = DescribeAlert($alert);
 	if( is_array($obj) ) {
-		$tpl = dbFetchRow('SELECT template FROM alert_templates WHERE rule_id LIKE "%,'.$alert['rule_id'].',%"');
+                $tpl = dbFetchRow("SELECT `template` FROM `alert_templates` JOIN `alert_template_map` ON `alert_template_map`.`alert_templates_id`=`alert_templates`.`id` WHERE `alert_template_map`.`alert_rule_id`=?", array($alert['rule_id']));
 		if( isset($tpl['template']) ) {
 			$tpl = $tpl['template'];
 		} else {
@@ -247,12 +247,19 @@ function ExtTransports($obj) {
 	global $config;
 	$tmp = false; //To keep scrutinizer from naging because it doesnt understand eval
 	foreach( $config['alert']['transports'] as $transport=>$opts ) {
-		if( ($opts === true || !empty($opts)) && file_exists($config['install_dir']."/includes/alerts/transport.".$transport.".php") ) {
+		if( ($opts === true || !empty($opts)) && $opts != false && file_exists($config['install_dir']."/includes/alerts/transport.".$transport.".php") ) {
 			echo $transport." => ";
 			eval('$tmp = function($obj,$opts) { global $config; '.file_get_contents($config['install_dir']."/includes/alerts/transport.".$transport.".php").' };');
 			$tmp = $tmp($obj,$opts);
-			echo ($tmp ? "OK" : "ERROR")."; ";
+			if( $tmp ) {
+				echo "OK";
+				log_event("Issued ".$obj['severity']." alert for rule '".$obj['name']."' to transport '".$transport."'",$obj['device_id']);
+			} else {
+				echo "ERROR";
+				log_event("Could not issue ".$obj['severity']." alert for rule '".$obj['name']."' to transport '".$transport."'",$obj['device_id']);
+			}
 		}
+		echo "; ";
 	}
 }
 
