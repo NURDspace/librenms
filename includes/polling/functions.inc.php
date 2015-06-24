@@ -368,8 +368,6 @@ function poll_mib_def($device, $mib_name_table, $mib_subdir, $mib_oids, $mib_gra
   return TRUE;
 }
 
-<<<<<<< HEAD
-
 function hytera_h2f($number,$nd) {
     if (strlen(str_replace(" ","",$number)) == 4)
     {
@@ -435,8 +433,6 @@ function hytera_h2f($number,$nd) {
     return number_format($floatfinal,$nd,'.','');
 }
 
-?>
-=======
 /*
  * Please use this instead of creating & updating RRD files manually.
  * @param device Device object - only 'hostname' is used at present
@@ -471,4 +467,3 @@ function get_main_serial($device) {
     }
 
 }
->>>>>>> 8226e8b447d535c4442171a326146782f28a7139
