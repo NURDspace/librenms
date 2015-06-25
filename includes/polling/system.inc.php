@@ -58,7 +58,7 @@
     $snmpEngineTime = 0;
   }
 
-  if (is_numeric($uptime))
+  if (is_numeric($uptime) && ($device['os'] != "hytera")
   {
     if ($uptime < $device['uptime'] && $uptime >= $snmpEngineTime)
     {
