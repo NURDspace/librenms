@@ -45,7 +45,7 @@ foreach (dbFetchRows($sql, $param) as $entry) {
     if (!$ignore) {
 
         if ($entry['ifInErrors'] > 0 || $entry['ifOutErrors'] > 0) {
-            $error_img = generate_port_link($entry,"<img src='images/16/chart_curve_error.png' alt='Interface Errors' border=0>",errors);
+            $error_img = generate_port_link($entry,"<img src='images/16/chart_curve_error.png' alt='Interface Errors' border=0>",port_errors);
         } else {
             $error_img = "";
         }
@@ -70,7 +70,7 @@ foreach (dbFetchRows($sql, $param) as $entry) {
     $response[] = array('mac_address'=>formatMac($entry['mac_address']),
                         'ipv4_address'=>$entry['ipv4_address'],
                         'hostname'=>generate_device_link($entry),
-                        'interface'=>generate_port_link($entry, makeshortif(fixifname($entry['ifDescr']))) . ' ' . $error_img,
+                        'interface'=>generate_port_link($entry, makeshortif(fixifname(ifLabel($entry)['label']))) . ' ' . $error_img,
                         'remote_device'=>$arp_name,
                         'remote_interface'=>$arp_if);
     }

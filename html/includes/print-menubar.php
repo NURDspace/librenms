@@ -235,6 +235,15 @@ if ($_SESSION['userlevel'] >= '5')
   if ($config['int_peering']) { echo('            <li><a href="iftype/type=peering/"><i class="fa fa-user-plus fa-fw fa-lg"></i> Peering</a></li>'); $ifbreak = 1; }
   if ($config['int_peering'] && $config['int_transit']) { echo('            <li><a href="iftype/type=peering,transit/"><i class="fa fa-user-secret fa-fw fa-lg"></i> Peering + Transit</a></li>'); $ifbreak = 1; }
   if ($config['int_core']) { echo('            <li><a href="iftype/type=core/"><i class="fa fa-anchor fa-fw fa-lg"></i> Core</a></li>'); $ifbreak = 1; }
+    if (is_array($config['custom_descr']) === FALSE) {
+        $config['custom_descr'] = array($config['custom_descr']);
+    }
+    foreach ($config['custom_descr'] as $custom_type) {
+        if (!empty($custom_type)) {
+            echo '          <li><a href="iftype/type=' . strtolower($custom_type) . '"><i class="fa fa-connectdevelop fa-fw fa-lg"></i> ' . ucfirst($custom_type) . '</a></li>';
+            $ifbreak = 1;
+        }
+    }
 }
 
 if ($ifbreak) {
@@ -292,7 +301,7 @@ if ($menu_sensors)
   echo('            <li role="presentation" class="divider"></li>');
 }
 
-$icons = array('fanspeed'=>'tachometer','humidity'=>'tint','temperature'=>'fire','current'=>'bolt','frequency'=>'line-chart','power'=>'power-off','voltage'=>'bolt','charge'=>'plus-square','dbm'=>'sun-o');
+$icons = array('fanspeed'=>'tachometer','humidity'=>'tint','temperature'=>'fire','current'=>'bolt','frequency'=>'line-chart','power'=>'power-off','voltage'=>'bolt','charge'=>'plus-square','dbm'=>'sun-o', 'load'=>'spinner','state'=>'bullseye');
 foreach (array('fanspeed','humidity','temperature') as $item)
 {
   if (isset($menu_sensors[$item]))
@@ -474,7 +483,6 @@ if(is_file("includes/print-menubar-custom.inc.php"))
         <a href="#" class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown"><i class="fa fa-cog fa-fw fa-lg fa-nav-icons"></i></a>
         <ul class="dropdown-menu">
           <li role="presentation" class="dropdown-header"> Settings</li>
-          <li role="presentation" class="divider"></li>
 <?php
 if ($_SESSION['userlevel'] >= '10')
 {
@@ -524,7 +532,7 @@ echo('
            <a href="#"><i class="fa fa-code fa-fw fa-lg"></i> API</a>
            <ul class="dropdown-menu scrollable-menu">
              <li><a href="api-access/"><i class="fa fa-wrench fa-fw fa-lg"></i> API Settings</a></li>
-             <li><a href="http://docs.librenms.org/API/API-Docs/" target="_blank"><i class="fa fa-book fa-fw fa-lg"></i> API Documentation</a></li>
+             <li><a href="http://docs.librenms.org/API/API-Docs/" target="_blank"><i class="fa fa-book fa-fw fa-lg"></i> API Docs</a></li>
            </ul>
            </li>
            <li role="presentation" class="divider"></li>');

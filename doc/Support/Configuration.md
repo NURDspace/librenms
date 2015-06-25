@@ -126,6 +126,10 @@ $config['show_locations_dropdown'] = 1;  # Enable Locations dropdown on menu
 $config['show_services']           = 0;  # Enable Services on menu
 $config['int_customers']           = 1;  # Enable Customer Port Parsing
 $config['customers_descr']         = 'cust'; // The description to look for in ifDescr. Can be an array as well array('cust','cid');
+$config['transit_descr']           = ""; // Add custom transit descriptions (can be an array)
+$config['peering_descr']           = ""; // Add custom peering descriptions (can be an array)
+$config['core_descr']              = ""; // Add custom core descriptions (can be an array)
+$config['custom_descr']            = ""; // Add custom interface descriptions (can be an array)
 $config['int_transit']             = 1;  # Enable Transit Types
 $config['int_peering']             = 1;  # Enable Peering Types
 $config['int_core']                = 1;  # Enable Core Port Types
@@ -210,6 +214,8 @@ $config['autodiscovery']['nets-exclude'][] = "240.0.0.0/4";
 Arrays of subnets to exclude in auto discovery mode.
 
 #### Email configuration
+
+> You can configure these options within the WebUI now, please avoid setting these options within config.php
 
 ```php
 $config['email_backend']              = 'mail';
@@ -412,10 +418,23 @@ This array can be used to filter out syslog messages that you don't want to be s
 #### Virtualization
 
 ```php
-$config['enable_libvirt'] = 0;
+$config['enable_libvirt'] = 1;
 $config['libvirt_protocols']    = array("qemu+ssh","xen+ssh");
 ```
-Enable this to switch on support for libvirt along with `libvirt_protocols` to indicate how you connect to libvirt.
+Enable this to switch on support for libvirt along with `libvirt_protocols`
+to indicate how you connect to libvirt.  You also need to:
+
+ 1. Generate a non-password-protected ssh key for use by LibreNMS, as the
+    user which runs polling & discovery (usually `librenms`).
+ 2. On each VM host you wish to monitor:
+   - Configure public key authentication from your LibreNMS server/poller by
+     adding the librenms public key to `~root/.ssh/authorized_keys`.
+   - (xen+ssh only) Enable libvirtd to gather data from xend by setting
+     `(xend-unix-server yes)` in `/etc/xen/xend-config.sxp` and
+     restarting xend and libvirtd.
+
+To test your setup, run `virsh -c qemu+ssh://vmhost/system list` or
+`virsh -c xen+ssh://vmhost list` as your librenms polling user.
  
 #### BGP Support
 

@@ -33,8 +33,8 @@ if(is_admin() === false) {
                             <option></option>
 <?php
 
-    foreach(dbFetchRows("SELECT `id`,`rule` FROM `alert_rules` where `disabled` = 0", array()) as $rule) {
-        echo '<option value="'.$rule['id'].'">'.$rule['rule'].'</option>';
+    foreach(dbFetchRows("SELECT `id`,`rule`,`name` FROM `alert_rules`", array()) as $rule) {
+        echo '<option value="'.$rule['id'].'">'.$rule['name'].'</option>';
     }
 ?>
                         </select>
@@ -56,7 +56,6 @@ if(is_admin() === false) {
 
 <script>
 $('#attach-alert-template').on('show.bs.modal', function(e) {
-    event.preventDefault();
     template_id = $(e.relatedTarget).data('template_id');
     $("#template_id").val(template_id);
     $.ajax({
@@ -80,7 +79,7 @@ $('#alert-template-attach').click('', function(event) {
     $('#rules_list :selected').each(function(i, selectedElement) {
         items.push($(selectedElement).val());
     });
-    var rules = items.join(', ');
+    var rules = items.join(',');
     $.ajax({
         type: 'POST',
         url: '/ajax_form.php',

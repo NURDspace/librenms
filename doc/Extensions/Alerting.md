@@ -15,6 +15,7 @@ Table of Content:
     - [Slack](#transports-slack)
     - [HipChat](#transports-hipchat)
     - [PagerDuty](#transports-pagerduty)
+    - [Pushover](#transports-pushover)
 - [Entities](#entities)
     - [Devices](#entity-devices)
     - [BGP Peers](#entity-bgppeers)
@@ -48,6 +49,7 @@ Rules must consist of at least 3 elements: An __Entity__, a __Condition__ and a 
 Rules can contain braces and __Glues__.  
 __Entities__ are provided as `%`-Noted pair of Table and Field. For Example: `%ports.ifOperStatus`.  
 __Conditions__ can be any of:
+
 - Equals `=`
 - Not Equals `!=`
 - Matches `~`
@@ -66,6 +68,7 @@ Arithmetics are allowed as well.
 ## <a name="rules-examples">Examples</a>
 
 Alert when:
+
 - Device goes down: `%devices.status != '1'`
 - Any port changes: `%ports.ifOperStatus != 'up'`
 - Root-directory gets too full: `%storage.storage_descr = '/' && %storage.storage_perc >= '75'`
@@ -80,12 +83,14 @@ The template-parser understands `if` and `foreach` controls and replaces certain
 ## <a name="templates-syntax">Syntax</a>
 
 Controls:
+
 - if-else (Else can be omitted):  
 `{if %placeholder == 'value'}Some Text{else}Other Text{/if}`
 - foreach-loop:  
 `{foreach %placeholder}Key: %key<br/>Value: %value{/foreach}`
 
 Placeholders:
+
 - Hostname of the Device: `%hostname`
 - Title for the Alert: `%title`
 - Time Elapsed, Only available on recovery (`%state == 0`): `%elapsed`
@@ -122,6 +127,8 @@ Alert sent to: {foreach %contacts}%value <%key> {/foreach}
 Transports are located within `$config['install_dir']/includes/alerts/transports.*.php` and defined as well as configured via `$config['alert']['transports']['Example'] = 'Some Options'`.  
 
 Contacts will be gathered automatically and passed to the configured transports.  
+By default the Contacts will be only gathered when the alert triggers and will ignore future changes in contacts for the incident. If you want contacts to be re-gathered before each dispatch, please set `$config['alert']['fixed-contacts'] = false;` in your config.php.
+
 The contacts will always include the `SysContact` defined in the Device's SNMP configuration and also every LibreNMS-User that has at least `read`-permissions on the entity that is to be alerted.  
 At the moment LibreNMS only supports Port or Device permissions.  
 You can exclude the `SysContact` by setting:
@@ -135,6 +142,8 @@ $config['alert']['admins']  = true; //Include Adminstrators into alert-contacts
 ```
 
 ## <a name="transports-email">E-Mail</a>
+
+> You can configure these options within the WebUI now, please avoid setting these options within config.php
 
 E-Mail transport is enabled with adding the following to your `config.php`:  
 ```php
@@ -162,6 +171,8 @@ $config['alert']['default_mail']           = '';                   //Default ema
 
 ## <a name="transports-api">API</a>
 
+> You can configure these options within the WebUI now, please avoid setting these options within config.php
+
 API transports definitions are a bit more complex than the E-Mail configuration.  
 The basis for configuration is `$config['alert']['transports']['api'][METHOD]` where `METHOD` can be `get`,`post` or `put`.  
 This basis has to contain an array with URLs of each API to call.  
@@ -177,6 +188,8 @@ $config['alert']['transports']['api']['get'][] = "https://api.thirdparti.es/issu
 
 ## <a name="transports-nagios">Nagios Compatible</a>
 
+> You can configure these options within the WebUI now, please avoid setting these options within config.php
+
 The nagios transport will feed a FIFO at the defined location with the same format that nagios would.  
 This allows you to use other Alerting-Systems to work with LibreNMS, for example [Flapjack](http://flapjack.io).
 ```php
@@ -185,6 +198,8 @@ $config['alert']['transports']['nagios'] = "/path/to/my.fifo"; //Flapjack expect
 
 ## <a name="transports-irc">IRC</a>
 
+> You can configure these options within the WebUI now, please avoid setting these options within config.php
+
 The IRC transports only works together with the LibreNMS IRC-Bot.  
 Configuration of the LibreNMS IRC-Bot is described [here](https://github.com/librenms/librenms/blob/master/doc/Extensions/IRC-Bot.md).  
 ```php
@@ -192,6 +207,8 @@ $config['alert']['transports']['irc'] = true;
 ```
 
 ## <a name="transports-slack">Slack</a>
+
+> You can configure these options within the WebUI now, please avoid setting these options within config.php
 
 The Slack transport will POST the alert message to your Slack Incoming WebHook, you are able to specify multiple webhooks along with the relevant options to go with it. All options are optional, the only required value is for url, without this then no call to Slack will be made. Below is an example of how to send alerts to two channels with different customised options:
 
@@ -203,6 +220,8 @@ $config['alert']['transports']['slack'][] = array('url' => "https://hooks.slack.
 ```
 
 ## <a name="transports-hipchat">HipChat</a>
+
+> You can configure these options within the WebUI now, please avoid setting these options within config.php
 
 The HipChat transport requires the following:
 
@@ -249,6 +268,8 @@ $config['alert']['transports']['hipchat'][] = array("url" => "https://api.hipcha
 
 ## <a name="transports-pagerduty">PagerDuty</a>
 
+> You can configure these options within the WebUI now, please avoid setting these options within config.php
+
 Enabling PagerDuty transports is almost as easy as enabling email-transports.
 
 All you need is to create a Service with type Generic API on your PagerDuty dashboard.
@@ -262,6 +283,31 @@ $config['alert']['transports']['pagerduty'] = 'MYAPIKEYGOESHERE';
 That's it!
 
 __Note__: Currently ACK notifications are not transported to PagerDuty, This is going to be fixed within the next major version (version by date of writing: 2015.05)
+
+## <a name="transports-pushover">Pushover</a>
+
+Enabling Pushover support is fairly easy, there are only two required parameters.
+
+Firstly you need to create a new Application (called LibreNMS, for example) in your account on the Pushover website (https://pushover.net/apps)
+
+Now copy your API Token/Key from the newly created Application and setup the transport in your config.php like:
+
+```php
+$config['alert']['transports']['pushover'][] = array(
+                                                    "appkey" => 'APPLICATIONAPIKEYGOESHERE',
+                                                    "userkey" => 'USERKEYGOESHERE',
+                                                    );
+```
+
+To modify the Critical alert sound, add the 'sound_critical' parameter, example:
+
+```php
+$config['alert']['transports']['pushover'][] = array(
+                                                    "appkey" => 'APPLICATIONAPIKEYGOESHERE',
+                                                    "userkey" => 'USERKEYGOESHERE',
+                                                    "sound_critical" => 'siren',
+                                                    );
+```
 
 # <a name="entities">Entities
 
@@ -448,3 +494,11 @@ Example: `%macros.past_5m` is Last 5 Minutes.
 Resolution: 5,10,15,30,60
 
 Source: `DATE_SUB(NOW(),INTERVAL $ MINUTE)`
+
+## <a name="macros-sensors">Sensors</a> (Boolean)
+
+Entity: `%macros.sensor`
+
+Description: Only select sensors that aren't ignored.
+
+Source: `(%sensors.sensor_alert = 1)`

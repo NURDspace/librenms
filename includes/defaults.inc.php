@@ -129,6 +129,10 @@ $config['old_graphs']             = 1;   // RRDfiles from before the great rra r
 
 $config['int_customers']           = 1;  # Enable Customer Port Parsing
 $config['customers_descr']         = 'cust';
+$config['transit_descr']           = ""; // Add custom transit descriptions (can be an array)
+$config['peering_descr']           = ""; // Add custom peering descriptions (can be an array)
+$config['core_descr']              = ""; // Add custom core descriptions (can be an array)
+$config['custom_descr']            = ""; // Add custom interface descriptions (can be an array)
 $config['int_transit']             = 1;  # Enable Transit Types
 $config['int_peering']             = 1;  # Enable Peering Types
 $config['int_core']                = 1;  # Enable Core Port Types
@@ -187,65 +191,7 @@ $config['autodiscovery']['nets-exclude'][] = "169.254.0.0/16";
 $config['autodiscovery']['nets-exclude'][] = "224.0.0.0/4";
 $config['autodiscovery']['nets-exclude'][] = "240.0.0.0/4";
 
-// Mailer backend Settings
-
-$config['email_backend']              = 'mail';               // Mail backend. Allowed: "mail" (PHP's built-in), "sendmail", "smtp".
-$config['email_from']                 = NULL;                 // Mail from. Default: "ProjectName" <projectid@`hostname`>
-$config['email_user']                 = $config['project_id'];
-$config['email_sendmail_path']        = '/usr/sbin/sendmail'; // The location of the sendmail program.
-$config['email_smtp_host']            = 'localhost';          // Outgoing SMTP server name.
-$config['email_smtp_port']            = 25;                   // The port to connect.
-$config['email_smtp_timeout']         = 10;                   // SMTP connection timeout in seconds.
-$config['email_smtp_secure']          = NULL;                 // Enable encryption. Use 'tls' or 'ssl'
-$config['email_smtp_auth']            = FALSE;                // Whether or not to use SMTP authentication.
-$config['email_smtp_username']        = NULL;                 // SMTP username.
-$config['email_smtp_password']        = NULL;                 // Password for SMTP authentication.
-
-// Alerting Settings
-
-$config['alert'] = array(
-	'macros' => array(                    //Macros:
-		'rule' => array(                    //  For Rules
-			//Time Macros
-			'now'      => 'NOW()',
-			'past_5m'  => 'DATE_SUB(NOW(),INTERVAL 5 MINUTE)',
-			'past_10m' => 'DATE_SUB(NOW(),INTERVAL 10 MINUTE)',
-			'past_15m' => 'DATE_SUB(NOW(),INTERVAL 15 MINUTE)',
-			'past_30m' => 'DATE_SUB(NOW(),INTERVAL 30 MINUTE)',
-			'past_60m' => 'DATE_SUB(NOW(),INTERVAL 60 MINUTE)',
-
-			//Device Macros
-			'device' => '%devices.disabled = "0" && %devices.ignore = "0"',
-			'device_up' => '%devices.status = "1" && %macros.device',
-			'device_down' => '%devices.status = "0" && %macros.device',
-
-			//Port Macros
-			'port' => '%ports.deleted = "0" && %ports.ignore = "0" && %ports.disabled = "0"',
-			'port_up' => '%ports.ifOperStatus = "up" && %ports.ifAdminStatus = "up" && %macros.port',
-			'port_down' => '%ports.ifOperStatus = "down" && %ports.ifAdminStatus != "down" && %macros.port',
-			'port_usage_perc' => '((%ports.ifInOctets_rate*8)/%ports.ifSpeed)*100',
-
-			//Misc Macros
-		),
-	),
-	'transports' => array(                //Transports:
-		'dummy' => false,                   //  Dummy alerting (debug)
-		'mail'  => false,                   //  E-Mail alerting
-		'irc'   => false,                   //  IRC Alerting
-	),
-	'syscontact' => true,                 //Issue to SysContact (or it's override)
-	'globals' => false,                   //Issue to global-read users
-	'admins' => false,                    //Issue to administrators
-	'default_only' => false,              //Only issue to default
-	'default_mail' => '',                 //Default email
-	'tolerance-window' => 10,             //Allow +/-10s tolerance to delay values to counter cron-irregularities
-);
-
-//Legacy options
-
-$config['alerts']['email']['default']      = NULL;    // Default alert recipient
-$config['alerts']['email']['default_only'] = FALSE;   // Only use default recipient
-$config['alerts']['email']['enable']       = TRUE;    // Enable email alerts
+$config['alerts']['email']['enable']       = FALSE;   // Enable email alerts
 $config['alerts']['bgp']['whitelist']      = NULL;    // Populate as an array() with ASNs to alert on.
 $config['alerts']['port']['ifdown']        = FALSE;   // Generate alerts for ports that go down
 
@@ -587,6 +533,7 @@ $config['poller_modules']['aruba-controller']             = 1;
 $config['poller_modules']['entity-physical']              = 1;
 $config['poller_modules']['applications']                 = 1;
 $config['poller_modules']['cisco-asa-firewall']           = 1;
+$config['poller_modules']['mib']                          = 0;
 
 // List of discovery modules. Need to be in this array to be
 // considered for execution.
@@ -624,6 +571,7 @@ $config['modules_compat']['rfc1628']['liebert']           = 1;
 $config['modules_compat']['rfc1628']['netmanplus']        = 1;
 $config['modules_compat']['rfc1628']['deltaups']          = 1;
 $config['modules_compat']['rfc1628']['poweralert']        = 1;
+$config['modules_compat']['rfc1628']['multimatic']        = 1;
 
 # Enable daily updates
 $config['update'] = 1;
@@ -637,7 +585,13 @@ $config['perf_times_purge']                               = 30; # Number in days
 # Date format for PHP date()s
 $config['dateformat']['long']                             = "r"; # RFC2822 style
 $config['dateformat']['compact']                          = "Y-m-d H:i:s";
+$config['dateformat']['byminute']                         = "Y-m-d H:i";
 $config['dateformat']['time']                             = "H:i:s";
+
+# Date format for MySQL DATE_FORMAT
+$config['dateformat']['mysql']['compact']                 = "%Y-%m-%d %H:%i:%s"; 
+$config['dateformat']['mysql']['date']                 = "%Y-%m-%d"; 
+$config['dateformat']['mysql']['time']                 = "%H:%i:%s"; 
 
 $config['enable_clear_discovery']                        = 1;// Set this to 0 if you want to disable the web option to rediscover devices
 $config['enable_port_relationship']                      = TRUE;// Set this to false to not display neighbour relationships for ports
@@ -664,5 +618,13 @@ $config['ipmi']['type'][]                                = "lanplus";
 $config['ipmi']['type'][]                                = "lan";
 $config['ipmi']['type'][]                                = "imb";
 $config['ipmi']['type'][]                                = "open";
+
+// Options needed for dyn config - do NOT edit
+$dyn_config['email_backend'] = array('mail','sendmail','smtp');
+$dyn_config['email_smtp_secure'] = array('', 'tls', 'ssl');
+
+// Unix-agent poller module config settings
+$config['unix-agent-connection-time-out'] 		= 10; //seconds
+$config['unix-agent-read-time-out'] 			= 10; //seconds
 
 ?>

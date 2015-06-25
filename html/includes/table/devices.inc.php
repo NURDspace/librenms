@@ -30,15 +30,20 @@ if (!empty($_POST['type']))     {
   }
 }
 if (!empty($_POST['state'])) {
-    $sql .= " AND status= ?";       $param[] = $state;
-    $sql .= " AND disabled='0' AND `ignore`='0'"; $param[] = '';
+    $sql .= " AND status= ?";
+    if( is_numeric($_POST['state']) ) {
+        $param[] = $_POST['state'];
+    } else {
+        $param[] = str_replace(array('up','down'),array(1,0),$_POST['state']);
+    }
 }
 if (!empty($_POST['disabled'])) { $sql .= " AND disabled= ?";     $param[] = $_POST['disabled']; }
 if (!empty($_POST['ignore']))   { $sql .= " AND `ignore`= ?";       $param[] = $_POST['ignore']; }
 if (!empty($_POST['location']) && $_POST['location'] == "Unset") { $location_filter = ''; }
 if (!empty($_POST['location'])) {
     $sql .= " AND (((`DB`.`attrib_value`='1' AND `DA`.`attrib_type`='override_sysLocation_string' AND `DA`.`attrib_value` = ?)) OR `location` = ?)";
-    $param = array(mres($_POST['location']),mres($_POST['location']));
+    $param[] = mres($_POST['location']);
+    $param[] = mres($_POST['location']);
 }
 if( !empty($_POST['group']) ) {
     require_once('../includes/device-groups.inc.php');
@@ -150,7 +155,12 @@ foreach (dbFetchRows($sql, $param) as $device) {
             $hostname = generate_device_link($device);
             $platform = $device['hardware'] . '<br />' . $device['features'];
             $os = $device['os_text'] . '<br />' . $device['version'];
-            $uptime = formatUptime($device['uptime'], 'short') . '<br />' . truncate($device['location'],32, '');
+            if (extension_loaded('mbstring')) {
+                $location = mb_substr($device['location'], 0, 32, 'utf8');
+            } else {
+                $location = truncate($device['location'], 32, '');
+            }
+            $uptime = formatUptime($device['uptime'], 'short') . '<br />' . $location;
             if ($subformat == "detail") {
                 $hostname .= '<br />' . $device['sysName'];
                 if ($port_count) {
