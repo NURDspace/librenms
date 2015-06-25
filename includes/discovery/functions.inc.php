@@ -669,6 +669,7 @@ function arp_discovery_is_cached($ip)
 	}
 }
 
+if (!function_exists('hytera_h2f')){
 function hytera_h2f($number,$nd) {
     if (strlen(str_replace(" ","",$number)) == 4)
     {
@@ -733,5 +734,5 @@ function hytera_h2f($number,$nd) {
 
     return number_format($floatfinal,$nd,'.','');
 }
-
+}
 ?>
