@@ -1,3 +1,45 @@
+### July 2015
+
+#### Bug fixes
+  - Fixed API not functioning. (PR1367)
+  - Fixed API not storing alert rule names (PR1372)
+  - Fixed datetimepicker use (PR1376)
+  - Do not allow master to rejoin itself. (PR1377)
+  - Fixed Nginx config file (PR1389)
+  - Fixed a number of permission issues (PR1411)
+  - Added 'running' status for BGP peers as up (PR1412)
+  - Fixed the remove search link in devices (PR1413)
+  - Fixed poller group query in discovery (PR1433)
+  - Fixed clicking anywhere in a search result will now take you to where you want (PR1472)
+  - Fixed inventory page not displaying results (PR1488)
+
+#### Improvements
+  - Added additional support for Rielo UPS (PR1381)
+  - Improved service check support (PR1385,PR1386,PR1387,PR1388)
+  - Added missing load and state icons (PR1392)
+  - Added basic detection for:
+    - Meraki (PR1402)
+    - Brocade (PR1404)
+    - Dell iDrac (PR1419,PR1420,PR1423,PR1427)
+    - Dell Networking OS (PR1474)
+    - Netonix (PR1476)
+  - Updated discovery of IP based devices (PR1406)
+  - Added using cronic for poller-wrapper.py to allow cron to send emails (PR1408)
+  - Added BGP discovery code (PR1414)
+  - Code cleanup and formatting (PR1415,PR1416,PR1431,PR1434,PR1439,PR1444,PR1450)
+  - Updated Cisco MIBs to latest versions (PR1436)
+  - Added ability to update users passwords in WebUI (PR1440)
+  - Default to two days performance data being shown (PR1442)
+  - Improve performance of unix-agent processes DB code (PR1447,PR1460)
+  - Added PowerConnect 3548 support (PR1452)
+  - Improved sensors page for mobile view (PR1454)
+  - Improvements to network map (PR1455,PR1470,PR1486)
+  - Added support for CollectD flush (PR1463)
+  - Added availability map (PR1464)
+  - Use snmpEngineTime as a fallback to uptime (PR1477)
+  - Added fallback support for devices not reporting ifAlias (PR1479)
+  - Added Boxcar (www.boxcar.io) transport for alerting (PR1481)
+
 ### June 2015
 
 #### Bug fixes
@@ -15,6 +57,14 @@
   - Fixed legend ifLabels (PR1296)
   - Fixed bug causing map to not load when stale link data was present (PR1297)
   - Fixed javascript issue preventing removal of alert rules (PR1312)
+  - Fixed removal of IPs before ports are deleted (PR1329)
+  - Fixed JS issue when removing ports from bills (PR1330)
+  - Fixed adding --daemon a second time to collectd Graphs (PR1342)
+  - Fixed CollectD DS names (PR1347,PR1349,PR1368)
+  - Fixed graphing issues when rrd contains special chars (PR1350)
+  - Fixed regex for device groups (PR1359)
+  - Added HOST-RESOURCES-MIB into Synology detection (RP1360)
+  - Fix health page graphs showing the first graph for all (PR1363)
 
 #### Improvements
   - Updated Syslog docs to include syslog-ng 3.5.1 updates (PR1171)
@@ -48,6 +98,18 @@
   - Added WebUI support for Pushover (PR1313)
   - Updated path check for Oxidized config (PR1316)
   - Added Multimatic UPS to rfc1628 detection (PR1317)
+  - Added timeout for Unix agent (PR1319)
+  - Added support for a poller to use more than one poller group (PR1323)
+  - Added ability to use Plugins on device overview page (PR1325)
+  - Added latency loss/avg/max/min results to DB and Graph (PR1326)
+  - Added recording of device down (snmp/icmp) (PR1326)
+  - Added debugging output for when invalid SNMPv3 options used (PR1331)
+  - Added load and state output to device overview page (PR1333)
+  - Added load sensors to RFC1628 Devices (PR1336)
+  - Added support for WebPower Pro II UPS Cards (PR1338)
+  - No longer rewrite server-status in .htaccess (PR1339)
+  - Added docs for setting up Service extensions (PR1354)
+  - Added additional info from pfsense devices (PR1356)
 
 ### May 2015
 
