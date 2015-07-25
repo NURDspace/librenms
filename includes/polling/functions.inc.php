@@ -1,41 +1,27 @@
 <?php
 
-function poll_sensor($device, $class, $unit)
-{
-  global $config, $memcache, $agent_sensors;
 
-  foreach (dbFetchRows("SELECT * FROM `sensors` WHERE `sensor_class` = ? AND `device_id` = ?", array($class, $device['device_id'])) as $sensor)
-  {
-    echo("Checking (" . $sensor['poller_type'] . ") $class " . $sensor['sensor_descr'] . "... ");
-    $sensor_value = '';
+function poll_sensor($device, $class, $unit) {
+    global $config, $memcache, $agent_sensors;
 
-    if ($sensor['poller_type'] == "snmp")
-    {
-      if ($device['os'] == 'siklu') {
-          $mib = ":RADIO-BRIDGE-MIB";
-      } else {
-          $mib = '';
-      }
-      if ($class == "temperature")
-      {
-        if ($device['os'] == 'netapp') {
-            require "includes/polling/temperatures/netapp.inc.php";
-        } elseif ($device['os'] == 'hytera')
-        {
-            require "includes/polling/temperatures/hytera.inc.php";
-        } else {
-          for ($i = 0;$i < 5;$i++) # Try 5 times to get a valid temp reading
-          {
-            if ($debug) echo("Attempt $i ");
-            $sensor_value = trim(str_replace("\"", "", snmp_get($device, $sensor['sensor_oid'], "-OUqnv", "SNMPv2-MIB$mib")));
-            preg_match("/[\d\.]+/",$sensor_value,$temp_response);
-            if (!empty($temp_response[0])) {
-                $sensor_value = $temp_response[0];
+    foreach (dbFetchRows('SELECT * FROM `sensors` WHERE `sensor_class` = ? AND `device_id` = ?', array($class, $device['device_id'])) as $sensor) {
+        echo 'Checking ('.$sensor['poller_type'].") $class ".$sensor['sensor_descr'].'... ';
+        $sensor_value = '';
+
+        if ($sensor['poller_type'] == 'snmp') {
+            if ($device['os'] == 'siklu') {
+                $mib = ':RADIO-BRIDGE-MIB';
+            }
+            else {
+                $mib = '';
             }
 
             if ($class == 'temperature') {
                 if ($device['os'] == 'netapp') {
                     include 'includes/polling/temperatures/netapp.inc.php';
+                }
+                elseif ($device['os'] == 'hytera') {
+                    require "includes/polling/temperatures/hytera.inc.php";
                 }
                 else {
                     // Try 5 times to get a valid temp reading
@@ -58,6 +44,22 @@ function poll_sensor($device, $class, $unit)
                     }
                 }//end if
             }
+            elseif ($class == "voltage") {
+                if ($device['os'] == 'hytera') {
+                    require "includes/polling/voltages/hytera.inc.php";
+                } 
+                else {
+                    for ($i = 0;$i < 5;$i++) {
+                        if ($debug) echo("Attempt $i ");
+                            $sensor_value = trim(str_replace("\"", "", snmp_get($device, $sensor['sensor_oid'], "-OUqnv", "SNMPv2-MIB$mib")));
+                            preg_match("/[\d\.]+/",$sensor_value,$temp_response);
+                            iconv(in_charset, out_charset, str)f (!empty($temp_response[0])) {
+                            $sensor_value = $temp_response[0];
+                        }
+                        sleep(1); # Give the TME some time to reset
+                    }
+                }
+            }
             else if ($class == 'state') {
                 $sensor_value = trim(str_replace('"', '', snmp_walk($device, $sensor['sensor_oid'], '-Oevq', 'SNMPv2-MIB')));
             }
@@ -71,30 +73,28 @@ function poll_sensor($device, $class, $unit)
             }//end if
             unset($mib);
         }
-      } 
-      elseif ($class == "voltage") {
-        if ($device['os'] == 'hytera') {
-            require "includes/polling/voltages/hytera.inc.php";
-        } else {
-          for ($i = 0;$i < 5;$i++) # Try 5 times to get a valid temp reading
-          {
-            if ($debug) echo("Attempt $i ");
-            $sensor_value = trim(str_replace("\"", "", snmp_get($device, $sensor['sensor_oid'], "-OUqnv", "SNMPv2-MIB$mib")));
-            preg_match("/[\d\.]+/",$sensor_value,$temp_response);
-            if (!empty($temp_response[0])) {
-                $sensor_value = $temp_response[0];
+        else if ($sensor['poller_type'] == 'agent') {
+            if (isset($agent_sensors)) {
+                $sensor_value = $agent_sensors[$class][$sensor['sensor_type']][$sensor['sensor_index']]['current'];
             }
-
-            sleep(1); # Give the TME some time to reset
-          }
+            else {
+                echo "no agent data!\n";
+                continue;
+            }
         }
-      } elseif ($class == "state") {
-          $sensor_value = trim(str_replace("\"", "", snmp_walk($device, $sensor['sensor_oid'], "-Oevq", "SNMPv2-MIB")));
-      } else {
-        if ($sensor['sensor_type'] == 'apc') {
-            $sensor_value = trim(str_replace("\"", "", snmp_walk($device, $sensor['sensor_oid'], "-OUqnv", "SNMPv2-MIB:PowerNet-MIB$mib")));
-        } else {
-            $sensor_value = trim(str_replace("\"", "", snmp_get($device, $sensor['sensor_oid'], "-OUqnv", "SNMPv2-MIB$mib")));
+        else if ($sensor['poller_type'] == 'ipmi') {
+            echo " already polled.\n";
+            // ipmi should probably move here from the ipmi poller file (FIXME)
+            continue;
+        }
+        else {
+            echo "unknown poller type!\n";
+            continue;
+        }//end if
+
+        if ($sensor_value == -32768) {
+            echo 'Invalid (-32768) ';
+            $sensor_value = 0;
         }
 
         if ($sensor['sensor_divisor']) {
@@ -397,71 +397,6 @@ function poll_mib_def($device, $mib_name_table, $mib_subdir, $mib_oids, $mib_gra
 
 }//end poll_mib_def()
 
-
-function hytera_h2f($number,$nd) {
-    if (strlen(str_replace(" ","",$number)) == 4)
-    {
-        $hex = '';
-        for ($i = 0; $i < strlen($number); $i++) {
-            $byte = strtoupper(dechex(ord($number{$i})));
-            $byte = str_repeat('0', 2 - strlen($byte)).$byte;
-            $hex.=$byte." ";
-        }
-        $number = $hex;
-        unset($hex);
-    }
-    $r = '';
-    $y = explode(' ', $number);
-    foreach ($y as $z) {
-        $r = $z . '' . $r;
-    }
-    $number = substr($r, 0, -1);
-    //$number = str_replace(" ", "", $number);
-    for ($i=0; $i<strlen($number); $i++)
-    {
-        $hex[]=substr($number,$i,1);
-    }
-
-    for ($i=0; $i<count($hex); $i++)
-    {
-        $dec[]=hexdec($hex[$i]);
-    }
-
-    for ($i=0; $i<count($dec); $i++)
-    {
-        $binfinal.=sprintf("%04d",decbin($dec[$i]));
-    }
-
-    $sign=substr($binfinal,0,1);
-    $exp=substr($binfinal,1,8);
-    $exp=bindec($exp);
-    $exp-=127;
-    $scibin=substr($binfinal,9);
-    $binint=substr($scibin,0,$exp);
-    $binpoint=substr($scibin,$exp);
-    $intnumber=bindec("1".$binint);
-
-    for ($i=0; $i<strlen($binpoint); $i++) {
-        $tmppoint[]=substr($binpoint,$i,1);
-    }
-
-    $tmppoint=array_reverse($tmppoint);
-    $tpointnumber=number_format($tmppoint[0]/2,strlen($binpoint),'.','');
-
-    for ($i=1; $i<strlen($binpoint); $i++) {
-        $pointnumber=number_format($tpointnumber/2,strlen($binpoint),'.','');
-        $tpointnumber=$tmppoint[$i+1].substr($pointnumber,1);
-    }
-
-    $floatfinal=$intnumber+$pointnumber;
-
-    if ($sign==1)
-    {
-        $floatfinal=-$floatfinal;
-    }
-
-    return number_format($floatfinal,$nd,'.','');
-}
 
 /*
  * Please use this instead of creating & updating RRD files manually.
